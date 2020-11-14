@@ -32,8 +32,7 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
 ## CONST
-TOKEN = 'NjQzMjg0OTE5ODgzMjY4MDk2.Xwxv2Q.fM6CQmSiO-Xj3XHWEOuecvEgAek'
-
+TOKEN = #Token#
 def clear_cashe():
     ### DO ON START
     cwd = os.listdir(os.getcwd())
