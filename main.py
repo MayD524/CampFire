@@ -31,8 +31,8 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
-## CONST
-TOKEN = 'NjQzMjg0OTE5ODgzMjY4MDk2.Xwxv2Q.fM6CQmSiO-Xj3XHWEOuecvEgAek'
+## TOEKN HERE
+TOKEN = 'TOKEN'
 
 def clear_cashe():
     ### DO ON START
@@ -79,9 +79,12 @@ class CampFie_Main(commands.Bot):
         print(self.start_message)
 
     def add_commands(self):
+
+        ## memes
         @self.command(name="test", pass_context=True)
         async def test(ctx):
             await ctx.channel.send(f"<@402197605515395082> Fuck you")
+
 
         @self.command(name="test2", pass_context=True)
         async def _test2(ctx):
@@ -91,7 +94,7 @@ class CampFie_Main(commands.Bot):
         @self.command(name="test3", pass_context=True)
         async def _test3(ctx):
             for i in range(100):
-                await ctx.channel.send("<@everyone> Hi guys")
+                await ctx.channel.send("@everyone Hi guys")
 
         @self.command(name="queue",pass_context=True)
         async def _queue(ctx):
