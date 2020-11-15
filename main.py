@@ -31,15 +31,8 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
-## TOEKN HERE
-TOKEN = 'TOKEN'
-
-def clear_cashe():
-    ### DO ON START
-    cwd = os.listdir(os.getcwd())
-    for song in cwd:
-        if song.endswith('.webm'):
-            os.remove(f'{song}')
+## Token
+TOKEN = "TOKEN"
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -63,39 +56,21 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data), data['duration']
 
-class CampFie_Main(commands.Bot):
+class CampFire_Main(commands.Bot):
 
     def __init__(self, command_prefix, self_bot):
         commands.Bot.__init__(self, command_prefix=command_prefix, self_bot=self_bot)
         self.start_message = "[INFO]: Bot now online"
         self.queue = []
         self.maxDuration = 7200
-        self.currentSong = ""
         self.canLoop = False
-        self.canPlay = False
         self.add_commands()
 
     async def on_ready(self):
         print(self.start_message)
 
     def add_commands(self):
-
-        ## memes
-        @self.command(name="test", pass_context=True)
-        async def test(ctx):
-            await ctx.channel.send(f"<@402197605515395082> Fuck you")
-
-
-        @self.command(name="test2", pass_context=True)
-        async def _test2(ctx):
-            for i in range(100):
-                await ctx.channel.send(f"<@402197605515395082> Fuck you")
-
-        @self.command(name="test3", pass_context=True)
-        async def _test3(ctx):
-            for i in range(100):
-                await ctx.channel.send("@everyone Hi guys")
-
+    
         @self.command(name="queue",pass_context=True)
         async def _queue(ctx):
             newSong = ctx.message.content.replace("$queue ", "")
@@ -116,13 +91,6 @@ class CampFie_Main(commands.Bot):
                 self.queue = []
                 await ctx.channel.send(f"{ctx.author.mention}, has cleared queue.")
 
-        @self.command(name="current", pass_context=True)
-        async def _current(ctx):
-            if self.currentSong != "":
-                await ctx.channel.send(f"Currently playing {self.currentSong}")
-            else:
-                await ctx.channel.send(f"No song is currently playing")
-
         @self.command(name="play", pass_context=True)
         async def _play(ctx,url):
             async def playSong(url):
@@ -138,8 +106,9 @@ class CampFie_Main(commands.Bot):
 
                 await ctx.send("Now playing: {}".format(player.title))
                 
-                await asyncio.sleep(duration)
+                await asyncio.sleep(duration + 0.3)
 
+            ## plays queue -> loops through list of all urls
             if url == "q":
                 i = 0
                 while i != len(self.queue):
@@ -150,6 +119,7 @@ class CampFie_Main(commands.Bot):
                     if self.canLoop == True and i == len(self.queue):
                         i = 0
 
+            ## plays campfile.json
             elif url == "c":
                 with open("campfile.json", "r") as jsonReader:
                     data = json.load(jsonReader)
@@ -159,9 +129,35 @@ class CampFie_Main(commands.Bot):
                     url = random.choice(val)
                     await playSong(url)
 
+            ## plays user song
             else:
                 await playSong(url)
-            
+        
+        ## pause, resume and stop functions
+        @self.command(name="pause",pass_context=True)
+        async def _pause(ctx):
+            if ctx.voice_client and ctx.voice_client.is_playing():
+                ctx.voice_client.pause()
+            else:
+                await ctx.send("I am not currently playing any songs")
+
+        @self.command(name="resume",pass_context=True)
+        async def _resume(ctx):
+            if ctx.voice_client and not ctx.voice_client.is_playing():
+                ctx.voice_client.resume()
+            else:
+                await ctx.send("No songs are currently paused")
+
+        @self.command(name="volume", pass_context=True)
+        async def _volume(ctx,volume:int):
+            ## Changes the players volume
+            if ctx.voice_client is None:
+                return await ctx.send("Not connect to a voice channel")
+
+            if volume > 200 or volume < 0:
+                return await ctx.send("That is not a valid input.")
+            ctx.voice_client.source.volume = volume / 100
+            await ctx.send("Changed volume to {}%".format(volume))
 
         ## join and leave channel
         @self.command(name="join", pass_context=True)
@@ -179,9 +175,8 @@ class CampFie_Main(commands.Bot):
             await ctx.send("Clearing {0} messages".format(arg1))
             await ctx.channel.purge(limit=int(arg1) + 2)
 
-
+## SCRIPT STARTS HERE
 if __name__ == "__main__":
-    clear_cashe()
     
-    bot = CampFie_Main(command_prefix="$", self_bot=False)
+    bot = CampFire_Main(command_prefix="$", self_bot=False)
     bot.run(TOKEN)
