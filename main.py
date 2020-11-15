@@ -108,16 +108,31 @@ class CampFire_Main(commands.Bot):
                 
                 await asyncio.sleep(duration + 0.3)
 
+            async def play_Queue(queue=None, mode=None, loop=False):
+                i = 0
+                if loop == True:
+                    while True:
+                        if mode == "random":
+                            song = random.choice(queue)
+                            
+                        else:
+                            if i == len(queue):
+                                i = 0
+                            else:
+                                song = queue[i]
+                                i += 1
+
+                        await playSong(song)
+
+
+                elif loop = False:
+                    while i != len(queue):
+                        song = queue[i]
+                        await playSong(song)
+
             ## plays queue -> loops through list of all urls
             if url == "q":
-                i = 0
-                while i != len(self.queue):
-                    url = self.queue[i]
-                    await playSong(url)
-
-                    i += 1
-                    if self.canLoop == True and i == len(self.queue):
-                        i = 0
+                await play_Queue(queue=self.queue,loop=False)
 
             ## plays campfile.json
             elif url == "c":
@@ -125,13 +140,12 @@ class CampFire_Main(commands.Bot):
                     data = json.load(jsonReader)
 
                 val = list(data.values())
-                while True:
-                    url = random.choice(val)
-                    await playSong(url)
+                await play_Queue(queue=val,mode="random",loop=True)
 
             ## plays user song
             else:
-                await playSong(url)
+                self.queue.append(url)
+                await play_Queue(queue=self.queue,loop=False)
         
         ## pause, resume and stop functions
         @self.command(name="pause",pass_context=True)
