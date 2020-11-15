@@ -125,7 +125,7 @@ class CampFire_Main(commands.Bot):
                         await playSong(song)
 
 
-                elif loop = False:
+                elif loop == False:
                     while i != len(queue):
                         song = queue[i]
                         await playSong(song)
