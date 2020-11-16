@@ -6,6 +6,7 @@ import time
 import os
 import json
 import youtube_dl
+import extrautils
 
 ffmpeg_options = {
     'options': '-vn'
@@ -93,6 +94,7 @@ class CampFire_Main(commands.Bot):
 
         @self.command(name="play", pass_context=True)
         async def _play(ctx,url):
+            playListconfig = extrautils.returnJson("playlists/playlist_config.json")
             async def playSong(url):
                 async with ctx.typing():
                     self.current = url
@@ -100,6 +102,7 @@ class CampFire_Main(commands.Bot):
                     
                     if duration >= self.maxDuration:
                         await ctx.send("This song is too long.")
+                        return
 
 
                     ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
@@ -108,7 +111,10 @@ class CampFire_Main(commands.Bot):
                 
                 await asyncio.sleep(duration + 0.3)
 
-            async def play_Queue(queue=None, mode=None, loop=False):
+            async def play_Queue(queue=None, mode=None, loop=False, jsonFile=None):
+                if queue == None and jsonFile != None:
+                    tmpData = extrautils.returnJson(jsonFile)
+                    queue = list(tmpData.values())
                 i = 0
                 if loop == True:
                     while True:
@@ -121,7 +127,6 @@ class CampFire_Main(commands.Bot):
                             else:
                                 song = queue[i]
                                 i += 1
-
                         await playSong(song)
 
 
@@ -135,17 +140,20 @@ class CampFire_Main(commands.Bot):
                 await play_Queue(queue=self.queue,loop=False)
 
             ## plays campfile.json
-            elif url == "c":
-                with open("campfile.json", "r") as jsonReader:
-                    data = json.load(jsonReader)
-
-                val = list(data.values())
-                await play_Queue(queue=val,mode="random",loop=True)
+            elif url in playListconfig.keys():
+                await play_Queue(mode="random",loop=True,jsonFile=playListconfig[url][1])
+            elif url not in playListconfig.keys():
+                for i in playListconfig.keys():
+                    if playListconfig[i][0] == url:
+                        await play_Queue(mode="random",loop=True,jsonFile=playListconfig[i][1])
 
             ## plays user song
             else:
-                self.queue.append(url)
-                await play_Queue(queue=self.queue,loop=False)
+                try:
+                    self.queue.append(url)
+                    await play_Queue(queue=self.queue,loop=False)
+                except Exception:
+                    await ctx.send("For some reason I couldn't play that song.")
         
         ## pause, resume and stop functions
         @self.command(name="pause",pass_context=True)
